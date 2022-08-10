@@ -2,6 +2,7 @@ import java.io.File;
 import java.nio.file.Files;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -10,73 +11,97 @@ import com.google.gson.JsonParser;
  */
 public class Main {
 
-	enum string_code {
+	private enum Genre {
 		tragedy, comedy, none
 	}
 
-	/**
-	 * @param inString
-	 *            - the inString
-	 * @return the {@link string_code}
-	 */
-	static string_code hashit(String inString) {
-		if (inString.equals("tragedy")) {
-			return string_code.tragedy;
-		}
-		if (inString.equals("comedy")) {
-			return string_code.comedy;
-		} else {
-			return string_code.none;
+	static Genre getGenre(String inString) {
+		switch (inString)
+		{
+			case "tragedy":
+				return Genre.tragedy;
+			case "comedy":
+				return Genre.comedy;
+			default:
+				return Genre.none;
 		}
 	}
 
-	static String statement(JsonArray invoices, JsonObject plays) {
+	static void statement(JsonArray invoices, JsonObject plays) {
 
-		int totalAmount = 0;
+		float totalAmount = 0;
 		int volumeCredits = 0;
 
-		String result = "Statement for " + invoices.get(0).getAsJsonObject().get("customer").getAsString() + " \n";
-		JsonArray performances = invoices.get(0).getAsJsonObject().get("performances").getAsJsonArray();
+		try	{
+			for(JsonElement item : invoices.getAsJsonArray()){
+				String result = "";
+				String customer = item.getAsJsonObject().get("customer").getAsString();
+				result = String.format("Statement for %s \n", customer);
 
-		for (int index = 0; index < performances.size(); ++index) {
-			int thisAmount = 0;
-			JsonObject play = plays.get(performances.get(index).getAsJsonObject().get("playID").getAsString())
-					.getAsJsonObject();
-			int audience = performances.get(index).getAsJsonObject().get("audience").getAsInt();
+				var performances = item.getAsJsonObject().get("performances").getAsJsonArray();
+				for(JsonElement performance : performances){
+					float thisAmount = 0;
+					String playId = performance.getAsJsonObject().get("playID").getAsString();
+					var play = plays.getAsJsonObject().get(playId);
 
-			switch (hashit(play.get("type").getAsString())) {
-				case tragedy:
-					thisAmount = 40000;
-					if (audience > 30) {
-						thisAmount += 1000 * (audience - 30);
-					}
-					break;
-				case comedy:
-					thisAmount = 30000;
-					if (audience > 20) {
-						thisAmount += 10000 + 500 * (audience - 20);
-					}
-					thisAmount += 300 * audience;
-					break;
-				default:
-					return "error";
+					String playType = play.getAsJsonObject().get("type").getAsString();
+					String playName = play.getAsJsonObject().get("name").getAsString();
+
+					int audience = performance.getAsJsonObject().get("audience").getAsInt();
+					Genre genre = getGenre(playType); //  Enum.Parse(typeof(StringCode), playType, true);
+
+					thisAmount = calculateAmount(genre, audience);
+					volumeCredits += calculateExtra(genre, audience);
+
+					// print line for this order
+					result += String.format(" %s: $%.2f (%d seats)\n", playName, thisAmount / 100, audience);
+					totalAmount += thisAmount;
+				}
+				result += String.format("Amount owed is $%.2f \n", totalAmount / 100);
+				result += String.format("You earned %d credits \n", volumeCredits);
+				System.out.println(result);
 			}
+		}
+		catch (Exception e)	{
+			System.out.println("Something went wrong" + e);
+		}
+	}
 
-			// add volume credits
-			volumeCredits += Math.max(audience - 30, 0);
+	static int calculateAmount(Genre type, int audience) {
+		int thisAmount = 0;
+		switch (type)	{
+			case tragedy:
+				thisAmount = 40000;
+				if (audience > 30)
+				{
+					thisAmount += 1000 * (audience - 30);
+				}
 
-			// add extra credit for every ten comedy attendees
-			if (play.get("type").getAsString() == "comedy")
-				volumeCredits += Math.floor(audience / 5);
+				break;
+			case comedy:
+				thisAmount = 30000;
+				if (audience > 20)
+				{
+					thisAmount += 10000 + 500 * (audience - 20);
+				}
 
-			// print line for this order
-			result += " " + play.get("name").getAsString() + ": $" + (thisAmount / 100) + "(" + audience + " seats)\n";
-			totalAmount += thisAmount;
+				thisAmount += 300 * audience;
+				break;
+			default:
+				return thisAmount;
 		}
 
-		result += "Amount owed is $" + (totalAmount / 100) + "\n";
-		result += "You earned " + volumeCredits + " credits\n";
-		return result;
+		return thisAmount;
+	}
+
+	static int calculateExtra(Genre type, int audience) {
+		// add volume credits
+		int volumeCredits = Math.max(audience - 30, 0);
+		// add extra credit for every ten comedy attendees
+		if (type.equals(Genre.comedy))
+			volumeCredits += (int) Math.floor((double) audience / 5.0d);
+
+		return volumeCredits;
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -91,7 +116,7 @@ public class Main {
 
 		JsonArray invoices = parser.parse(invoicesFile).getAsJsonArray();
 
-		System.out.println(statement(invoices, plays));
+		statement(invoices, plays);
 	}
 
 }
