@@ -1,0 +1,25 @@
+<component name="libraryTable">
+  <library name="jackson-annotations-2.6.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../jackson-annotations-2.6.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../jackson-core-2.6.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../jackson-databind-2.6.1.jar!/" />
+      <root url="file://$PROJECT_DIR$/../.." />
+    </CLASSES>
+    <JAVADOC>
+      <root url="file://$PROJECT_DIR$/../../jackson-databind-2.13.3-javadoc" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../JavaRushTasks/3.JavaMultithreading/src" />
+      <root url="file://$PROJECT_DIR$/../JavaRushTasks/4.JavaCollections/src" />
+      <root url="file://$PROJECT_DIR$/../JavaRushTasks/8.Games/src" />
+      <root url="file://$PROJECT_DIR$/../untitled1/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../untitled2/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../untitled3/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../untitled/src/main" />
+      <root url="file://$PROJECT_DIR$/../.." />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/../.." recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/../.." recursive="false" type="SOURCES" />
+  </library>
+</component>
